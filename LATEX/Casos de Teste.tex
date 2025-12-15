@@ -27,10 +27,17 @@
 \lhead{Sistema SAFE - Casos de Teste}
 \rhead{Versão 1.0}
 
-% Rodapé
-\lfoot{\footnotesize http://www.cos.ufrj.br/$\sim$ese}
-\cfoot{\footnotesize \textbf{LENS} – Laboratório de Engenharia de Software}
-\rfoot{\footnotesize Página \thepage\ de \pageref{LastPage}}
+\fancyfoot{} 
+
+% Define um único campo central contendo uma tabela que organiza os 3 elementos
+\cfoot{
+    \scriptsize % Reduz levemente a fonte para garantir que caiba na linha
+    \begin{tabular*}{\textwidth}{@{\extracolsep{\fill}} l c r @{}}
+        http://www.cos.ufrj.br/$\sim$ese & 
+        \textbf{LENS} – Laboratório de Engenharia de Software & 
+        Página \thepage\ de \pageref{LastPage}
+    \end{tabular*}
+}
 
 \begin{document}
 
