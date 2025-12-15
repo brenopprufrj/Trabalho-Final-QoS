@@ -1,0 +1,756 @@
+\documentclass[a4paper,12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[brazil]{babel}
+\usepackage{geometry}
+\usepackage{fancyhdr}
+\usepackage{xcolor}
+\usepackage{tabularx}
+\usepackage{lastpage}
+\usepackage{hyperref}
+\usepackage{colortbl}
+\usepackage{enumitem}
+
+% Configuração das Margens
+\geometry{left=2.5cm, right=2.5cm, top=3cm, bottom=3cm}
+
+% Configuração do Cabeçalho e Rodapé
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{1pt}
+\lhead{Sistema SAFE\\Plano de Testes} 
+\rhead{\vspace{0.4cm}Versão 1.0.0}
+
+% Rodapé conforme o original
+\lfoot{\footnotesize http://www.cos.ufrj.br/$\sim$ese}
+\cfoot{\footnotesize \textbf{LENS} – Laboratório de Engenharia de Software}
+\rfoot{\footnotesize Página \thepage\ de \pageref{LastPage}}
+
+\begin{document}
+
+% --- CAPA ---
+\begin{titlepage}
+    \thispagestyle{empty}
+    \vspace*{6cm}
+    \begin{flushright}
+        {\Huge \textbf{Sistema SAFE}}\\
+        \vspace{0.5cm}
+        {\Huge \textbf{Plano de Testes}}\\
+        \vspace{1cm}
+        {\Large \textbf{Versão 1.0.0}}
+    \end{flushright}
+    
+    \vspace{2cm}
+    \noindent
+    \textbf{Organização:} LENS – Laboratório de Engenharia de Software\\
+    \textbf{Sistema:} SAFE (Sistema de Apoio à Biossegurança em Ambientes Físicos)
+\end{titlepage}
+
+% --- HISTÓRICO ---
+\newpage
+\centerline{\Large \textbf{Histórico de Revisão}}
+\vspace{0.5cm}
+
+\begin{tabularx}{\textwidth}{|l|l|X|l|}
+\hline
+\rowcolor{gray!30} \textbf{Data} & \textbf{Versão} & \textbf{Descrição} & \textbf{Autor} \\ \hline
+2025-12-15 & 1.0.0 & Criação inicial do plano de testes & Equipe QA \\ \hline
+\end{tabularx}
+
+\vspace{1cm}
+
+% --- SUMÁRIO ---
+\tableofcontents
+\newpage
+
+% --- CONTEÚDO ---
+
+\section{Introdução}
+
+\subsection{Finalidade}
+
+Este documento tem como finalidade estabelecer a estratégia de testes para o Sistema SAFE, um sistema IoT de missão crítica para monitoramento de biossegurança em ambientes físicos. O plano define os tipos de testes, recursos necessários, cronograma e casos de teste detalhados para execução por equipe externa e independente.
+
+\subsection{Escopo}
+
+O documento cobre o planejamento de testes para os três subsistemas do SAFE:
+
+\begin{itemize}
+    \item \textbf{SAFE BIoT:} Hardware/Firmware de coleta de dados ambientais
+    \item \textbf{SAFE Manager:} Backend/API de gerenciamento via MQTT
+    \item \textbf{SAFE Dashboard:} Frontend de visualização e alertas
+\end{itemize}
+
+Este plano está associado ao projeto SAFE e afeta diretamente:
+\begin{itemize}
+    \item Validação dos requisitos funcionais e não funcionais
+    \item Garantia de qualidade para ambientes de produção
+    \item Certificação de segurança e confiabilidade do sistema IoT
+\end{itemize}
+
+\subsection{Definições, Acrônimos, e Abreviações}
+
+\begin{tabularx}{\textwidth}{|l|X|}
+\hline
+\rowcolor{gray!20} \textbf{Termo} & \textbf{Descrição} \\ \hline
+SAFE & Sistema de Apoio à Biossegurança em Ambientes Físicos \\ \hline
+BIoT & Dispositivo IoT composto por sensores de temperatura, movimento, CO₂ e VOCs \\ \hline
+MQTT & Message Queuing Telemetry Transport - Protocolo de mensagens para IoT \\ \hline
+Broker & Agente intermediário (RabbitMQ) usando protocolo MQTT \\ \hline
+CO₂ & Dióxido de carbono, medido em ppm (partes por milhão) \\ \hline
+VOCs & Compostos orgânicos voláteis, medidos em ppb (partes por bilhão) \\ \hline
+RF & Requisito Funcional \\ \hline
+RNF & Requisito Não Funcional \\ \hline
+E2E & End-to-End (Teste de ponta a ponta) \\ \hline
+API & Application Programming Interface \\ \hline
+JSON & JavaScript Object Notation \\ \hline
+Speck & Algoritmo de criptografia leve usado no sistema \\ \hline
+\end{tabularx}
+
+\vspace{0.5cm}
+Para definições completas, consultar documento \texttt{SAFE\_Requisitos\_V2.pdf} (Seção "Informações e Variáveis").
+
+\subsection{Referências}
+
+\begin{tabularx}{\textwidth}{|X|l|l|X|}
+\hline
+\rowcolor{gray!20} \textbf{Título} & \textbf{Versão} & \textbf{Data} & \textbf{Onde pode ser obtido} \\ \hline
+Requisitos do Sistema SAFE & 1.0 & 2025-12 & SAFE\_Requisitos\_V2.pdf \\ \hline
+Informações e Variáveis SAFE & 1.0 & 2025-12 & SAFE\_Requisitos\_V2.pdf \\ \hline
+Template Plano de Teste LENS & 1.0.0 & - & Template\_para\_Plano\_de\_Testes.pdf \\ \hline
+Template Casos de Teste LENS & 1.0 & - & Template\_CT\_Portugues.pdf \\ \hline
+\end{tabularx}
+
+\subsection{Visão geral}
+
+Este documento está organizado em três seções principais:
+
+\begin{itemize}
+    \item \textbf{Seção 2 - Estratégia de Teste:} Define os tipos de testes a serem realizados, cronograma, recursos e casos de teste para cada categoria
+    \item \textbf{Seção 3 - Resultados dos Testes:} Área reservada para registro de resultados após execução
+\end{itemize}
+
+\newpage
+\section{Estratégia de Teste}
+
+\subsection{Abordagem Geral}
+
+A estratégia foi desenvolvida para \textbf{maximizar a cobertura de requisitos com esforço mínimo}, seguindo os seguintes princípios:
+
+\subsubsection{Princípios de Otimização}
+
+\begin{enumerate}
+    \item \textbf{Agrupamento por Fluxos E2E:} Testes que cobrem múltiplos requisitos em um único fluxo de dados (Sensor → Broker → Manager → Dashboard)
+    \item \textbf{Priorização de Criticidade:} Foco em funcionalidades críticas de missão (monitoramento, alertas, segurança)
+    \item \textbf{Testes de Limites (Boundary):} Utilização das constantes definidas como oráculos de teste
+    \item \textbf{Simulação Realista:} Uso de mensagens MQTT reais e simuladores de hardware quando necessário
+\end{enumerate}
+
+\subsubsection{Fluxos Críticos Identificados}
+
+Os seguintes fluxos E2E cobrem a maior parte dos requisitos do sistema:
+
+\paragraph{Fluxo 1: Ciclo Completo de Dados de Qualidade do Ar}
+\textbf{Cobertura:} BIoT RF03, RF04, RF06, RF07, RNF2, RNF10 | Manager RF13, RNF01, RNF03, RNF07, RNF16, RNF19 | Dashboard RF01, RF02, RF09, RF10, RNF01, RNF03, RNF05
+
+\textbf{Descrição:} Coleta de dados ambientais (temp, CO₂, umidade, VOCs) → Publicação MQTT → Recepção Manager → Armazenamento BD → Disponibilização API → Exibição Dashboard
+
+\paragraph{Fluxo 2: Contagem de Pessoas e Controle de Ocupação}
+\textbf{Cobertura:} BIoT RF02, RNF2, RNF11 | Manager RF13, RF15, RF16, RNF04 | Dashboard RF03, RF05
+
+\textbf{Descrição:} Detecção entrada/saída → Atualização contador → Verificação limites → Mudança de estado instalação → Notificação usuários
+
+\paragraph{Fluxo 3: Gerenciamento de Solicitações de Manutenção}
+\textbf{Cobertura:} Manager RF04, RF05, RF06, RF07, RF14
+
+\textbf{Descrição:} Solicitação serviço → Notificação equipe → Aceite → Conclusão → Histórico
+
+\paragraph{Fluxo 4: Gerenciamento de Solicitações de Limpeza}
+\textbf{Cobertura:} Manager RF08, RF09, RF10, RF11, RF14
+
+\textbf{Descrição:} Similar ao Fluxo 3, mas para serviços de limpeza
+
+\paragraph{Fluxo 5: Alertas e Limites de Biossegurança}
+\textbf{Cobertura:} BIoT RF01, RF05, RNF3, RNF4, RNF12 | Manager RNF02, RNF35 | Dashboard RF04, RF11, RF12
+
+\textbf{Descrição:} Configuração limites Manager → Publicação Broker → Recepção BIoT → Monitoramento contínuo → Alerta visual/sonoro
+
+\newpage
+\subsection{Testes Funcionais}
+
+\textbf{Objetivo:} Validar se as funcionalidades do sistema atendem aos requisitos funcionais especificados, testando os fluxos de negócio e casos de uso principais.
+
+\subsubsection{Testes End-to-End (E2E)}
+
+\paragraph{Prazo para realização}
+
+\textbf{Momento:} Após integração completa dos três subsistemas\\
+\textbf{Duração estimada:} 3 dias\\
+\textbf{Frequência:} A cada versão release do sistema
+
+\paragraph{Recursos necessários}
+
+\textit{Hardware:}
+\begin{itemize}[noitemsep]
+    \item 1 dispositivo BIoT real (ou simulador MQTT configurado)
+    \item Ambiente de rede local (Wi-Fi isolado para testes)
+    \item Computador para execução do Manager
+    \item Computador/dispositivo móvel para acesso ao Dashboard
+\end{itemize}
+
+\textit{Software:}
+\begin{itemize}[noitemsep]
+    \item Broker MQTT (RabbitMQ ou Mosquitto)
+    \item Simulador de mensagens MQTT (MQTT.fx, MQTT Explorer ou script Python)
+    \item Navegadores: Chrome 118+, Firefox 115+, Edge 118+, Safari 16+
+    \item Banco de dados de teste (configurado)
+    \item Docker (para deploy Manager/Dashboard)
+\end{itemize}
+
+\textit{Humanos:}
+\begin{itemize}[noitemsep]
+    \item 2 testadores (um para executar, um para validar)
+    \item 1 desenvolvedor de suporte (para dúvidas técnicas)
+\end{itemize}
+
+\textit{Ferramentas de Simulação Requeridas:}
+\begin{itemize}[noitemsep]
+    \item Simulador de Sensor: Script Python que publica JSON no broker simulando sensores
+    \item Gerador de Carga: Para simular múltiplos dispositivos BIoT simultaneamente
+    \item Mock de Autenticação: Para simular diferentes papéis de usuário
+\end{itemize}
+
+\paragraph{Requisitos Funcionais a serem testados}
+
+\textbf{Subsistema BIoT:} RF01, RF02, RF03, RF04, RF05, RF06, RF07\\
+\textbf{Subsistema Manager:} RF01--RF18\\
+\textbf{Subsistema Dashboard:} RF01--RF12
+
+\paragraph{Casos de Teste}
+
+Referência: Documento \textbf{``Casos de Teste SAFE.pdf''} para scripts detalhados.
+
+\textbf{CT-E2E-01: Ciclo Completo de Dados de Qualidade do Ar}
+
+\textit{Cenário:} Validar fluxo completo de coleta → transmissão → processamento → exibição de dados ambientais
+
+\textit{Dados de Entrada:} JSON MQTT com temperatura=23.5°C, umidade=55\%, CO₂=650ppm, VOCs=120ppb
+
+\textit{Resultado Esperado:} (1) Dados armazenados no BD do Manager, (2) Dashboard exibe valores corretos em ≤15s, (3) Dados criptografados no trânsito (Speck)
+
+\vspace{0.3cm}
+\textbf{CT-E2E-02: Contagem de Pessoas e Mudança de Estado}
+
+\textit{Cenário:} Simular 16 entradas em instalação com limite de 15 pessoas
+
+\textit{Dados de Entrada:} 16 eventos de entrada (entry\_flow=1) via MQTT
+
+\textit{Resultado Esperado:} (1) Contador atualizado para 16 pessoas, (2) Estado da instalação muda para ``Não Liberado (Em uso)'', (3) Dashboard exibe alerta ``Bloqueado'', (4) Gestor recebe notificação de uso não autorizado, (5) Ao publicar 8 saídas, estado volta para ``Liberado''
+
+\vspace{0.3cm}
+\textbf{CT-E2E-03: Solicitação e Conclusão de Manutenção}
+
+\textit{Cenário:} Staff solicita manutenção → Equipe aceita → Gestor conclui
+
+\textit{Dados de Entrada:} Solicitação de manutenção para INST-001 com motivo ``Ar condicionado com defeito''
+
+\textit{Resultado Esperado:} (1) Equipe de manutenção recebe e-mail, (2) Estado da instalação = ``Bloqueado (Aguardando manutenção)'', (3) Após conclusão, histórico registra todas as datas/responsáveis, (4) Estado volta para ``Liberado''
+
+\vspace{0.3cm}
+\textbf{CT-E2E-04: Solicitação e Conclusão de Limpeza}
+
+\textit{Cenário:} Staff solicita limpeza → Equipe aceita → Gestor conclui
+
+\textit{Dados de Entrada:} Solicitação de limpeza para INST-002
+
+\textit{Resultado Esperado:} (1) Equipe de limpeza recebe notificação, (2) Estado = ``Bloqueado (Aguardando limpeza)'', (3) Histórico completo armazenado, (4) Estado final = ``Liberado''
+
+\vspace{0.3cm}
+\textbf{CT-E2E-05: Configuração e Alertas de Limites}
+
+\textit{Cenário:} Gestor altera limite de CO₂ para 800ppm → BIoT recebe novo limite → Sensor envia valor 850ppm
+
+\textit{Dados de Entrada:} Novo limite CO₂=800ppm (via Manager), leitura de sensor CO₂=850ppm
+
+\textit{Resultado Esperado:} (1) BIoT atualiza limite interno em ≤30min, (2) Dashboard exibe alerta ``Limite máximo atingido'', (3) LED de alerta aceso no BIoT, (4) Classificação de risco atualizada no Dashboard
+
+\vspace{0.3cm}
+\textbf{CT-E2E-06: Uso Não Autorizado de Instalação}
+
+\textit{Cenário:} Pessoas acessam instalação sem agendamento
+
+\textit{Dados de Entrada:} Evento de entrada (entry\_flow=1) em instalação sem agendamento
+
+\textit{Resultado Esperado:} (1) Manager detecta ocupação não autorizada, (2) Gestor recebe notificação, (3) Evento registrado no log de auditoria
+
+\vspace{0.3cm}
+\textbf{CT-E2E-07: Exibição de Histórico no Dashboard}
+
+\textit{Cenário:} Visualizar gráficos temporais da última hora
+
+\textit{Dados de Entrada:} Dados históricos de INST-001 (30 pontos de intervalo de 2min)
+
+\textit{Resultado Esperado:} (1) Dashboard exibe 5 gráficos lineares (temp, CO₂, umidade, VOCs, pessoas), (2) Valores máximos exibidos para cada medida, (3) Intervalo temporal = 2 minutos
+
+\newpage
+\subsection{Testes de Requisitos Não Funcionais}
+
+\textbf{Objetivo:} Validar atributos de qualidade do sistema como desempenho, segurança, confiabilidade, usabilidade e manutenibilidade, garantindo que o sistema atende aos requisitos não funcionais especificados.
+
+\textbf{Nota Importante:} Os testes de requisitos não funcionais devem ser executados \textbf{APÓS} a conclusão e aprovação dos testes funcionais, garantindo que a base funcional do sistema está estável antes de avaliar seus atributos de qualidade.
+
+\subsubsection{Testes de Integração e Comunicação (MQTT/Broker)}
+
+\paragraph{Prazo para realização}
+
+\textbf{Momento:} Após aprovação dos testes funcionais\\
+\textbf{Duração estimada:} 2 dias\\
+\textbf{Frequência:} A cada modificação na estrutura de mensagens MQTT ou atualização de protocolo
+
+\paragraph{Recursos necessários}
+
+\textit{Software:}
+\begin{itemize}[noitemsep]
+    \item Broker MQTT de teste
+    \item Cliente MQTT (MQTT Explorer ou similar)
+    \item Scripts de publicação/subscrição MQTT
+    \item Analisador de rede (Wireshark) para verificar criptografia
+\end{itemize}
+
+\textit{Humanos:}
+\begin{itemize}[noitemsep]
+    \item 1 testador com conhecimento de MQTT e protocolos de comunicação
+\end{itemize}
+
+\paragraph{Requisitos Não Funcionais a serem testados}
+
+\textbf{BIoT:} RNF1, RNF2, RNF10, RNF11, RNF15, RNF17\\
+\textbf{Manager:} RNF01, RNF03, RNF07, RNF08, RNF16, RNF17, RNF19
+
+\paragraph{Casos de Teste}
+
+Referência: Documento \textbf{``Casos de Teste SAFE.pdf''} para scripts detalhados.
+
+\textbf{CT-INT-01: Validação de Formato JSON (SAFE\_IAQ)}
+
+\textit{Cenário:} Publicar mensagens MQTT com diferentes formatos JSON (válido, campo faltando, tipo errado, valor NULL, JSON inválido)
+
+\textit{Dados de Entrada:} 5 payloads JSON variando de válido a completamente inválido
+
+\textit{Resultado Esperado:} (1) Payload válido aceito e armazenado, (2) Payloads inválidos rejeitados com alerta ``DADOS DO DISPOSITIVO [ID] EM FORMATO ERRADO''
+
+\vspace{0.3cm}
+\textbf{CT-INT-02: Validação de Formato JSON (SAFE\_ENTRY\_FLOW)}
+
+\textit{Cenário:} Testar formato JSON para eventos de entrada/saída
+
+\textit{Dados de Entrada:} entry\_flow=1 (entrada), entry\_flow=-1 (saída), entry\_flow=``entrada'' (inválido)
+
+\textit{Resultado Esperado:} (1) Entrada: contador +1, (2) Saída: contador -1, (3) Inválido: alerta de formato errado
+
+\vspace{0.3cm}
+\textbf{CT-INT-03: Criptografia Speck nos Dados}
+
+\textit{Cenário:} Capturar pacotes MQTT com Wireshark durante transmissão de dados
+
+\textit{Dados de Entrada:} BIoT publica dados no tópico SAFE\_IAQ
+
+\textit{Resultado Esperado:} (1) Payload do pacote MQTT criptografado (não legível em texto plano), (2) Manager descriptografa e processa corretamente
+
+\subsubsection{Testes de Limites (Boundary Testing)}
+
+\paragraph{Prazo para realização}
+
+\textbf{Momento:} Após testes de integração e comunicação\\
+\textbf{Duração estimada:} 1 dia\\
+\textbf{Frequência:} Uma vez por release
+
+\paragraph{Recursos necessários}
+
+\textit{Software:}
+\begin{itemize}[noitemsep]
+    \item Simulador de tempo (para acelerar/desacelerar intervalos)
+    \item Scripts para injetar valores extremos nos sensores
+\end{itemize}
+
+\textit{Humanos:}
+\begin{itemize}[noitemsep]
+    \item 1 testador especializado em testes de borda
+\end{itemize}
+
+\paragraph{Requisitos Não Funcionais a serem testados}
+
+Todos os requisitos não funcionais que dependem de \textbf{constantes de tempo e valores limite}.
+
+\textbf{Requisitos específicos:}\\
+\textbf{BIoT:} RNF3, RNF4, RNF5, RNF10, RNF12\\
+\textbf{Manager:} RNF07, RNF15\\
+\textbf{Dashboard:} RNF04, RNF05, RNF06
+
+\paragraph{Casos de Teste}
+
+Referência: Documento \textbf{``Casos de Teste SAFE.pdf''} para scripts detalhados.
+
+\textbf{CT-LIM-01: Timeout de Sessão}
+
+\textit{Cenário:} Usuário autenticado permanece inativo por período superior a TEMPO\_MAXIMO\_INATIVIDADE (1 hora)
+
+\textit{Dados de Entrada:} Login às T0, inatividade por 61 minutos
+
+\textit{Resultado Esperado:} (1) Aos 59min: sessão ainda ativa, (2) Aos 61min: sessão encerrada automaticamente, (3) Redirecionamento para tela de login
+
+\vspace{0.3cm}
+\textbf{CT-LIM-02: Intervalo de Atualização de Dados (15s)}
+
+\textit{Cenário:} Monitorar publicações do BIoT no tópico SAFE\_IAQ
+
+\textit{Dados de Entrada:} 10 publicações consecutivas do BIoT
+
+\textit{Resultado Esperado:} Intervalo entre publicações = 15s ± 1s (INTERVALO\_ATUALIZACAO\_DADOS\_QUALIDADE\_AR)
+
+\vspace{0.3cm}
+\textbf{CT-LIM-03: Valores Extremos de CO₂}
+
+\textit{Cenário:} Publicar leituras de CO₂ em valores extremos (limite configurado = 1000ppm)
+
+\textit{Dados de Entrada:} CO₂ = 0ppm, 500ppm, 999ppm, 1000ppm, 5000ppm
+
+\textit{Resultado Esperado:} (1) Valores ≤999ppm: aceitos sem alerta, (2) Valores ≥1000ppm: aceitos com alerta, (3) Dashboard exibe valores corretamente
+
+\vspace{0.3cm}
+\textbf{CT-LIM-06: Alerta de Falta de Dados (5 minutos)}
+
+\textit{Cenário:} Interromper publicações do BIoT por período superior a TEMPO\_MAXIMO\_ANTES\_ALERTA\_DASHBOARD
+
+\textit{Dados de Entrada:} Última publicação em T0, sem novas publicações
+
+\textit{Resultado Esperado:} (1) T0+4min: sem alerta, (2) T0+5min: Dashboard exibe ``OS DADOS NÃO ESTÃO SENDO ATUALIZADOS'', (3) Ao retomar publicação: alerta desaparece
+
+\subsubsection{Testes de Segurança e Controle de Acesso}
+
+\paragraph{Prazo para realização}
+
+\textbf{Momento:} Após testes de limites\\
+\textbf{Duração estimada:} 1 dia\\
+\textbf{Frequência:} Uma vez por release e obrigatoriamente após qualquer mudança de segurança
+
+\paragraph{Recursos necessários}
+
+\textit{Software:}
+\begin{itemize}[noitemsep]
+    \item Múltiplas contas de teste (uma para cada papel de usuário)
+    \item Ferramenta de análise de requisições (Postman, Burp Suite)
+    \item Scanner de vulnerabilidades (opcional)
+\end{itemize}
+
+\textit{Humanos:}
+\begin{itemize}[noitemsep]
+    \item 1 testador de segurança certificado ou com experiência comprovada
+\end{itemize}
+
+\paragraph{Requisitos Não Funcionais a serem testados}
+
+\textbf{Manager:} RNF14, RNF15, RNF16, RNF17\\
+\textbf{BIoT:} RNF15, RNF16, RNF17, RNF19
+
+\paragraph{Casos de Teste}
+
+Referência: Documento \textbf{``Casos de Teste SAFE.pdf''} para scripts detalhados.
+
+\textbf{CT-SEG-01: Login com Credenciais}
+
+\textit{Cenário:} Testar autenticação com credenciais válidas e inválidas
+
+\textit{Dados de Entrada:} (1) Email/senha válidos, (2) Senha errada, (3) Email inexistente, (4) Campos vazios
+
+\textit{Resultado Esperado:} (1) Login bem-sucedido, (2-4) Mensagens de erro apropriadas
+
+\vspace{0.3cm}
+\textbf{CT-SEG-02: Troca de Senha no Primeiro Acesso}
+
+\textit{Cenário:} Novo usuário faz primeiro login
+
+\textit{Dados de Entrada:} Login com credenciais temporárias, tentativa de nova senha fraca e forte
+
+\textit{Resultado Esperado:} (1) Redirecionamento obrigatório para alteração de senha, (2) Senha fraca rejeitada com critérios exibidos, (3) Senha forte aceita (>6 caracteres, números, maiúsculas, minúsculas, especiais)
+
+\vspace{0.3cm}
+\textbf{CT-SEG-04: Controle de Acesso por Papel (RBAC)}
+
+\textit{Cenário:} Usuários de diferentes papéis tentam acessar recursos
+
+\textit{Dados de Entrada:} Login como Administrador, Gestor, Staff, Equipe Manutenção
+
+\textit{Resultado Esperado:} (1) Administrador: acesso total, (2) Gestor: acesso apenas à sua hierarquia, (3) Staff: apenas solicitações, sem configurações, (4) Tentativas de acesso não autorizado: bloqueadas
+
+\subsubsection{Testes de Confiabilidade e Tolerância a Falhas}
+
+\paragraph{Prazo para realização}
+
+\textbf{Momento:} Após testes de segurança\\
+\textbf{Duração estimada:} 1 dia\\
+\textbf{Frequência:} Uma vez por release
+
+\paragraph{Recursos necessários}
+
+\textit{Software/Hardware:}
+\begin{itemize}[noitemsep]
+    \item Ferramenta para simular queda de rede
+    \item Simulador de queda de energia (para BIoT)
+    \item Script para derrubar Broker temporariamente
+    \item Ferramenta de monitoramento de uptime
+\end{itemize}
+
+\textit{Humanos:}
+\begin{itemize}[noitemsep]
+    \item 1 testador especializado em testes de confiabilidade
+\end{itemize}
+
+\paragraph{Requisitos Não Funcionais a serem testados}
+
+\textbf{BIoT:} RNF6, RNF7, RNF8, RNF9, RNF13\\
+\textbf{Manager:} RNF05, RNF06, RNF09, RNF11\\
+\textbf{Dashboard:} RNF04, RNF08, RNF10
+
+\paragraph{Casos de Teste}
+
+Referência: Documento \textbf{``Casos de Teste SAFE.pdf''} para scripts detalhados.
+
+\textbf{CT-TOL-01: Queda e Retorno de Internet (BIoT)}
+
+\textit{Cenário:} BIoT perde conexão Wi-Fi e reconecta após 2 minutos
+
+\textit{Dados de Entrada:} Desabilitar Wi-Fi, aguardar 2min, reabilitar Wi-Fi
+
+\textit{Resultado Esperado:} (1) Durante offline: BIoT armazena dados localmente, (2) Reconexão automática em <30s, (3) Publicação de backlog + dados novos, (4) Manager recebe todos os dados
+
+\vspace{0.3cm}
+\textbf{CT-TOL-06: Dados em Formato Errado}
+
+\textit{Cenário:} Publicar JSON malformado no Broker
+
+\textit{Dados de Entrada:} \texttt{\{temperatura: vinte, co2: abc\}} (JSON inválido)
+
+\textit{Resultado Esperado:} (1) Manager detecta formato inválido, (2) Alerta na tela: ``DADOS DO DISPOSITIVO [ID] EM FORMATO ERRADO'', (3) Erro registrado em log com timestamp
+
+\vspace{0.3cm}
+\textbf{CT-TOL-07: Disponibilidade 99,9\%}
+
+\textit{Cenário:} Monitoramento contínuo do Manager e Dashboard por 30 dias
+
+\textit{Dados de Entrada:} Ferramenta de monitoramento de uptime
+
+\textit{Resultado Esperado:} Disponibilidade ≥99,9\% ao mês (downtime máximo ≈43 minutos), exceto janelas de manutenção programadas
+
+\subsubsection{Testes de Desempenho e Eficiência}
+
+\paragraph{Prazo para realização}
+
+\textbf{Momento:} Após testes de confiabilidade\\
+\textbf{Duração estimada:} 1 dia\\
+\textbf{Frequência:} Uma vez por release e obrigatoriamente antes do deploy em produção
+
+\paragraph{Recursos necessários}
+
+\textit{Software/Hardware:}
+\begin{itemize}[noitemsep]
+    \item Gerador de carga (JMeter, Locust ou script customizado)
+    \item Monitor de recursos do sistema (CPU, Memória, Rede, Disco)
+    \item Equipamento de referência para teste de precisão de sensores
+\end{itemize}
+
+\textit{Humanos:}
+\begin{itemize}[noitemsep]
+    \item 1 testador de performance com experiência em sistemas IoT
+\end{itemize}
+
+\paragraph{Requisitos Não Funcionais a serem testados}
+
+\textbf{BIoT:} RNF5 (Precisão 90\%), RNF10, RNF13\\
+\textbf{Manager:} RNF07, RNF09 (Disponibilidade 99,9\%)\\
+\textbf{Dashboard:} RNF05, RNF07
+
+\paragraph{Casos de Teste}
+
+Referência: Documento \textbf{``Casos de Teste SAFE.pdf''} para scripts detalhados.
+
+\textbf{CT-PERF-01: Carga com 50 Dispositivos BIoT Simultâneos}
+
+\textit{Cenário:} Simular 50 dispositivos BIoT publicando dados simultaneamente a cada 15s
+
+\textit{Dados de Entrada:} Gerador de carga publicando 50 streams MQTT paralelos
+
+\textit{Resultado Esperado:} (1) Manager processa todos os dados sem perda, (2) Latência de processamento <5s, (3) CPU/Memória do Manager dentro de limites aceitáveis
+
+\vspace{0.3cm}
+\textbf{CT-PERF-02: Precisão de Leitura dos Sensores (≥90\%)}
+
+\textit{Cenário:} Comparar 100 leituras do BIoT com equipamento de referência
+
+\textit{Dados de Entrada:} 100 leituras simultâneas de temperatura, CO₂, umidade e 50 eventos de contagem de pessoas
+
+\textit{Resultado Esperado:} Erro médio ≤10\% para cada medida (precisão ≥90\% conforme RNF5)
+
+\vspace{0.3cm}
+\textbf{CT-PERF-03: Latência de Atualização Dashboard (≤15s)}
+
+\textit{Cenário:} Medir tempo entre publicação BIoT e exibição no Dashboard
+
+\textit{Dados de Entrada:} Publicação de dados no Broker com timestamp
+
+\textit{Resultado Esperado:} Dashboard atualiza valores em ≤15s após publicação (INTERVALO\_ATUALIZAR\_DADOS)
+
+\subsubsection{Testes de Usabilidade (Interface Responsiva e Compatibilidade)}
+
+\paragraph{Prazo para realização}
+
+\textbf{Momento:} Após testes de desempenho\\
+\textbf{Duração estimada:} 0.5 dia\\
+\textbf{Frequência:} Uma vez por release
+
+\paragraph{Recursos necessários}
+
+\textit{Software/Hardware:}
+\begin{itemize}[noitemsep]
+    \item Dispositivos físicos: Smartphone, Tablet, Desktop
+    \item Ferramenta de teste responsivo (Browser DevTools)
+    \item Navegadores: Chrome 118+, Firefox 115+, Edge 118+, Safari 16+
+\end{itemize}
+
+\textit{Humanos:}
+\begin{itemize}[noitemsep]
+    \item 1 testador de UI/UX com conhecimento em design responsivo
+\end{itemize}
+
+\paragraph{Requisitos Não Funcionais a serem testados}
+
+\textbf{Manager:} RNF13, RNF18\\
+\textbf{Dashboard:} RNF12, RNF13, RNF14
+
+\paragraph{Casos de Teste}
+
+Referência: Documento \textbf{``Casos de Teste SAFE.pdf''} para scripts detalhados.
+
+\textbf{CT-RESP-01: Layout Pequeno (≤640px)}
+
+\textit{Cenário:} Acessar Dashboard em dispositivo móvel (360x640px)
+
+\textit{Dados de Entrada:} DevTools configurado para resolução mobile
+
+\textit{Resultado Esperado:} (1) Cards de instalações empilhados verticalmente, (2) Menu responsivo (hamburguer), (3) Todos os elementos acessíveis e funcionais
+
+\vspace{0.3cm}
+\textbf{CT-RESP-04: Compatibilidade de Navegadores}
+
+\textit{Cenário:} Acessar Manager e Dashboard em diferentes navegadores
+
+\textit{Dados de Entrada:} Chrome 118+, Firefox 115+, Edge 118+, Safari 16+
+
+\textit{Resultado Esperado:} (1) Dashboard carrega corretamente em todos, (2) Gráficos exibidos, (3) Alertas funcionam, (4) Login do Manager funcional
+
+\subsubsection{Testes de Manutenibilidade (Instalação e Atualização)}
+
+\paragraph{Prazo para realização}
+
+\textbf{Momento:} Após testes de usabilidade, antes de cada deploy\\
+\textbf{Duração estimada:} 0.5 dia\\
+\textbf{Frequência:} Obrigatoriamente a cada atualização de versão
+
+\paragraph{Recursos necessários}
+
+\textit{Software/Hardware:}
+\begin{itemize}[noitemsep]
+    \item Ambiente limpo (máquina virtual ou container sem instalação prévia)
+    \item Docker instalado
+    \item Acesso ao repositório de imagens Docker
+\end{itemize}
+
+\textit{Humanos:}
+\begin{itemize}[noitemsep]
+    \item 1 testador de infraestrutura ou DevOps
+\end{itemize}
+
+\paragraph{Requisitos Não Funcionais a serem testados}
+
+\textbf{Manager:} RNF10, RNF11, RNF12\\
+\textbf{Dashboard:} RNF09, RNF10, RNF11\\
+\textbf{BIoT:} RNF14, RNF20, RNF21
+
+\paragraph{Casos de Teste}
+
+\textbf{CT-INST-01: Instalação Inicial via Docker (Manager)}
+
+\textit{Cenário:} Instalar Manager em ambiente limpo usando Docker
+
+\textit{Dados de Entrada:} Imagem Docker do Manager, ambiente sem instalação prévia
+
+\textit{Resultado Esperado:} (1) Container inicia sem erros, (2) Banco de dados criado automaticamente, (3) Manager acessível via browser, (4) Logs sem erros críticos
+
+\vspace{0.3cm}
+\textbf{CT-INST-03: Atualização de Versão sem Perda de Dados (Rollout)}
+
+\textit{Cenário:} Atualizar Manager da v1.0 para v1.1 com dados existentes
+
+\textit{Dados de Entrada:} Sistema v1.0 com dados de produção, nova imagem Docker v1.1
+
+\textit{Resultado Esperado:} (1) Atualização bem-sucedida, (2) Sem perda de dados do BD, (3) Sistema funcional após atualização, (4) Possibilidade de rollback
+
+\vspace{0.3cm}
+\textbf{CT-INST-04: Acesso Direto ao Servidor em Caso de Falha Sistêmica}
+
+\textit{Cenário:} Sistema com falha sistêmica, Administrador precisa acessar servidor
+
+\textit{Dados de Entrada:} Credenciais de administrador, acesso SSH/terminal
+
+\textit{Resultado Esperado:} (1) Administrador consegue acesso direto ao servidor, (2) Logs acessíveis, (3) Comandos de diagnóstico funcionais
+
+\newpage
+\section{Resultados dos Testes}
+
+Esta seção será preenchida após a execução dos testes. Para cada tipo de teste, registrar:
+
+\begin{itemize}
+    \item Data de execução
+    \item Testador responsável
+    \item Ambiente utilizado
+    \item Casos de teste executados
+    \item Taxa de sucesso/falha
+    \item Defeitos encontrados (IDs de rastreamento)
+    \item Ações corretivas tomadas
+    \item Observações e recomendações
+\end{itemize}
+
+\subsection{Resultados - Testes Funcionais E2E}
+
+\begin{tabularx}{\textwidth}{|l|X|l|l|l|l|X|}
+\hline
+\rowcolor{gray!20} \textbf{Data} & \textbf{Testador} & \textbf{Ambiente} & \textbf{Casos Exec.} & \textbf{Sucesso} & \textbf{Falha} & \textbf{Observações} \\ \hline
+& & & & & & \\ \hline
+\end{tabularx}
+
+\vspace{0.5cm}
+\textbf{Defeitos Encontrados:}
+\begin{itemize}
+    \item [Lista de bugs com IDs e severidade]
+\end{itemize}
+
+\textbf{Ações Tomadas:}
+\begin{itemize}
+    \item [Descrição das correções aplicadas]
+\end{itemize}
+
+\subsection{Resultados - Testes de Integração MQTT}
+
+\subsection{Resultados - Testes de Limites}
+
+\subsection{Resultados - Testes de Segurança}
+
+\subsection{Resultados - Testes de Tolerância a Falhas}
+
+\subsection{Resultados - Testes de Desempenho}
+
+\subsection{Resultados - Testes de Responsividade}
+
+\subsection{Resultados - Testes de Instalação}
+
+\end{document}

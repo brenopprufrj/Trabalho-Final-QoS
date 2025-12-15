@@ -1,0 +1,481 @@
+\documentclass[a4paper,11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[brazil]{babel}
+\usepackage{geometry}
+\usepackage{fancyhdr}
+\usepackage{xcolor}
+\usepackage{tabularx}
+\usepackage{lastpage}
+\usepackage{hyperref}
+\usepackage{multirow}
+\usepackage{colortbl}
+\usepackage{longtable}
+\usepackage{array}
+
+% Configuração das Margens
+\geometry{left=2cm, right=2cm, top=2.5cm, bottom=2.5cm}
+
+% Configuração do Cabeçalho e Rodapé
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{1pt}
+\lhead{Sistema SAFE - Casos de Teste}
+\rhead{Versão 1.0}
+
+% Rodapé
+\lfoot{\footnotesize http://www.cos.ufrj.br/$\sim$ese}
+\cfoot{\footnotesize \textbf{LENS} – Laboratório de Engenharia de Software}
+\rfoot{\footnotesize Página \thepage\ de \pageref{LastPage}}
+
+\begin{document}
+
+% --- CAPA ---
+\begin{titlepage}
+    \vspace*{8cm}
+    \begin{flushright}
+        {\Huge \textbf{Sistema SAFE}}\\
+        \vspace{0.5cm}
+        {\Huge \textbf{Casos de Teste}}\\
+        \vspace{1cm}
+        {\Large \textbf{Versão 1.0}}
+    \end{flushright}
+\end{titlepage}
+
+% --- INFO DO DOCUMENTO ---
+\noindent
+\begin{tabularx}{\textwidth}{|X|l|}
+\hline
+& Versão: 1.0 \\
+\hline
+\textbf{Organização:} LENS - Laboratório de Engenharia de Software & Data: 2025-12-15 \\
+\hline
+\end{tabularx}
+
+\vspace{1cm}
+\centerline{\Large \textbf{Histórico de Revisões}}
+\vspace{0.5cm}
+
+\begin{tabularx}{\textwidth}{|l|l|X|l|}
+\hline
+\rowcolor{gray!20} \textbf{Data} & \textbf{Versão} & \textbf{Descrição} & \textbf{Autor} \\ \hline
+2025-12-15 & 1.0 & Criação inicial dos casos de teste & Equipe QA \\ \hline
+\end{tabularx}
+
+\vspace{1cm}
+
+% --- SUMÁRIO ---
+\tableofcontents
+\newpage
+
+% --- CONTEÚDO ---
+
+\section{Introdução}
+
+Este documento especifica os casos de teste para o Sistema SAFE (Sistema de Apoio à Biossegurança em Ambientes Físicos). Os casos foram elaborados para execução por equipe externa e independente, contendo passos detalhados, valores de entrada específicos (incluindo payloads JSON MQTT), e resultados esperados precisos baseados nas constantes do sistema.
+
+\subsection{Definições, Acrônimos e Abreviações}
+
+\begin{tabularx}{\textwidth}{|l|X|}
+\hline
+\rowcolor{gray!20} \textbf{Termo} & \textbf{Descrição} \\ \hline
+SAFE & Sistema de Apoio à Biossegurança em Ambientes Físicos \\ \hline
+BIoT & Dispositivo IoT de coleta de dados ambientais \\ \hline
+MQTT & Protocolo de mensagens para IoT \\ \hline
+Broker & RabbitMQ - intermediário de mensagens MQTT \\ \hline
+ppm & Partes por milhão (unidade de CO₂) \\ \hline
+ppb & Partes por bilhão (unidade de VOCs) \\ \hline
+E2E & End-to-End (ponta a ponta) \\ \hline
+RBAC & Role-Based Access Control \\ \hline
+\end{tabularx}
+
+\subsection{Referências}
+
+\begin{tabularx}{\textwidth}{|X|l|l|X|}
+\hline
+\rowcolor{gray!20} \textbf{Título} & \textbf{Versão} & \textbf{Data} & \textbf{Onde pode ser obtido} \\ \hline
+Requisitos do Sistema SAFE & 1.0 & 2025-12 & SAFE\_Requisitos\_V2.pdf \\ \hline
+Informações e Variáveis SAFE & 1.0 & 2025-12 & SAFE\_Requisitos\_V2.pdf \\ \hline
+Template Plano de Teste LENS & 1.0.0 & - & Template\_para\_Plano\_de\_Testes.pdf \\ \hline
+Template Casos de Teste LENS & 1.0 & - & Template\_CT\_Portugues.pdf \\ \hline
+Plano de Testes SAFE & 1.0.0 & 2025-12-15 & Plano de Testes SAFE.pdf \\ \hline
+\end{tabularx}
+
+\newpage
+\section{Ambiente de Teste}
+
+\subsection{Ambiente Integrado (E2E)}
+
+\begin{tabularx}{\textwidth}{|l|X|X|}
+\hline
+\rowcolor{gray!20} \textbf{Item} & \textbf{Detalhes} & \textbf{Configuração Adicional} \\ \hline
+Máquina Manager & Servidor Docker & Diretório BD: /var/lib/postgresql/data \\ \hline
+Máquina Dashboard & Servidor Web Docker & BD: PostgreSQL 14+ \\ \hline
+Broker MQTT & RabbitMQ 3.11+ com plugin MQTT & Porta: 1883 (sem TLS), 8883 (TLS) \\ \hline
+Dispositivo BIoT & NodeMCU ESP32 ou Simulador Python & MAC Address: registrado no Manager \\ \hline
+Client Browser & Chrome 118+ / Firefox 115+ & Resolução: 1920x1080, 768x1024, 360x640 \\ \hline
+Testador & [Nome] & Data: [dd/mm/yyyy] \\ \hline
+Status & & (Sucesso/Falha) \\ \hline
+\end{tabularx}
+
+\subsection{Ambiente de Simulação MQTT}
+
+\begin{tabularx}{\textwidth}{|l|X|X|}
+\hline
+\rowcolor{gray!20} \textbf{Item} & \textbf{Detalhes} & \textbf{Configuração Adicional} \\ \hline
+Máquina & Cliente MQTT (MQTT Explorer ou script Python) & Broker: localhost:1883 \\ \hline
+Credenciais & user: biot\_test / pwd: [configurado] & TLS: Habilitado \\ \hline
+Tópicos & SAFE\_IAQ, SAFE\_ENTRY\_FLOW, SAFE & \\ \hline
+\end{tabularx}
+
+\section{Informações de Configuração (Pré-condições gerais)}
+
+\subsection{Dados de Teste Padrão}
+
+\subsubsection{Usuários de Teste}
+
+\begin{tabularx}{\textwidth}{|l|l|l|X|}
+\hline
+\rowcolor{gray!20} \textbf{Papel} & \textbf{Login} & \textbf{Senha} & \textbf{Permissões} \\ \hline
+Administrador & admin@safe.br & Admin@2025! & Todas \\ \hline
+Gestor Instalação & gestor@ct.ufrj.br & Gestor@2025! & Gerenciar instalações CT \\ \hline
+Staff & professor@ct.ufrj.br & Prof@2025! & Solicitar uso/manutenção \\ \hline
+Equipe Manutenção & manut@safe.br & Manut@2025! & Aceitar/concluir manutenção \\ \hline
+Equipe Limpeza & limpeza@safe.br & Limpeza@2025! & Aceitar/concluir limpeza \\ \hline
+\end{tabularx}
+
+\subsubsection{Instalações de Teste}
+
+\begin{tabularx}{\textwidth}{|l|l|X|l|l|}
+\hline
+\rowcolor{gray!20} \textbf{ID} & \textbf{Nome} & \textbf{Localização} & \textbf{Tipo} & \textbf{Dispositivo BIoT} \\ \hline
+INST-001 & Lab Química & CT → Bloco A → Andar 2 & Laboratório & BIOT-MAC-001 \\ \hline
+INST-002 & Sala 201 & CT → Bloco B → Andar 2 & Sala de aula & BIOT-MAC-002 \\ \hline
+INST-003 & Auditório Principal & CT → Bloco C → Térreo & Auditório & BIOT-MAC-003 \\ \hline
+\end{tabularx}
+
+\subsection{Constantes de Tempo para Validação}
+
+\begin{tabularx}{\textwidth}{|X|l|X|}
+\hline
+\rowcolor{gray!20} \textbf{Constante} & \textbf{Valor} & \textbf{Uso no Teste} \\ \hline
+INTERVALO\_ATUALIZACAO\_DADOS\_QUALIDADE\_AR & 15s & Verificar publicação periódica \\ \hline
+INTERVALO\_ATUALIZACAO\_LIMITES & 30min & Verificar refresh de limites \\ \hline
+TEMPO\_MAXIMO\_INATIVIDADE & 1h & Teste de timeout de sessão \\ \hline
+TEMPO\_MAXIMO\_ANTES\_ALERTA\_DASHBOARD & 5min & Alerta de falta de dados \\ \hline
+INTERVALO\_ATUALIZAR\_DADOS (Manager) & 15s & Polling do Manager \\ \hline
+\end{tabularx}
+
+\newpage
+\section{Casos de Teste Funcionais (End-to-End)}
+
+\textbf{Objetivo:} Validar as funcionalidades do sistema através de fluxos completos de ponta a ponta, garantindo que os requisitos funcionais são atendidos.
+
+\subsection{Caso de Teste E2E-01: Ciclo Completo de Dados de Qualidade do Ar}
+
+\subsubsection{Descrição}
+
+Validar o fluxo completo desde a coleta de dados ambientais pelo BIoT, passando pelo Broker e Manager, até a exibição no Dashboard.
+
+\textbf{Cobertura de Requisitos:}\\
+BIoT: RF03, RF04, RF06, RF07, RNF2, RNF10, RNF17\\
+Manager: RF13, RNF01, RNF03, RNF07, RNF16, RNF19\\
+Dashboard: RF01, RF02, RF09, RF10, RNF01, RNF03, RNF05
+
+\subsubsection{Pré-condições}
+
+\begin{itemize}
+    \item Broker MQTT ativo e acessível
+    \item Manager conectado ao Broker e ao Banco de Dados
+    \item Dashboard conectado à API do Manager
+    \item Dispositivo BIoT BIOT-MAC-001 registrado no sistema
+    \item Instalação INST-001 cadastrada com limites configurados
+\end{itemize}
+
+\subsubsection{Cenário (Script)}
+
+\begin{footnotesize}
+\begin{longtable}{|p{0.7cm}|p{5.5cm}|p{4cm}|p{2cm}|p{1.3cm}|p{1cm}|p{1cm}|}
+\hline
+\rowcolor{gray!20} \textbf{Passo} & \textbf{Descrição} & \textbf{Resultado Esperado} & \textbf{Resultado Obtido} & \textbf{Sucesso/ Falha} & \textbf{Nº Amb.} & \textbf{Nº Log} \\ \hline
+\endfirsthead
+
+\multicolumn{7}{c}%
+{{\bfseries \tablename\ \thetable{} -- continuação da página anterior}} \\
+\hline
+\rowcolor{gray!20} \textbf{Passo} & \textbf{Descrição} & \textbf{Resultado Esperado} & \textbf{Resultado Obtido} & \textbf{Sucesso/ Falha} & \textbf{Nº Amb.} & \textbf{Nº Log} \\ \hline
+\endhead
+
+\hline \multicolumn{7}{|r|}{{Continua na próxima página}} \\ \hline
+\endfoot
+
+\hline
+\endlastfoot
+
+1 & Publicar no Broker (tópico SAFE\_IAQ) o JSON com dados normais & Mensagem recebida pelo Broker & & & & \\ \hline
+2 & Aguardar 15 segundos & Manager deve coletar a mensagem & & & & \\ \hline
+3 & Consultar Banco de Dados (tabela sensor\_data) & Registro inserido com dados corretos & & & & \\ \hline
+4 & Abrir Dashboard e acessar card da instalação INST-001 & Exibir valores corretos & & & & \\ \hline
+5 & Verificar timestamp da última atualização no Dashboard & Timestamp deve ser ≤15s do horário atual & & & & \\ \hline
+6 & Verificar criptografia: capturar pacote MQTT com Wireshark & Dados devem estar criptografados (protocolo Speck) & & & & \\ \hline
+\multicolumn{4}{|r|}{\textbf{Status Final:}} & \multicolumn{3}{l|}{(Sucesso/Falha)} \\ \hline
+\end{longtable}
+\end{footnotesize}
+
+\subsubsection{Conjunto de valores}
+
+\begin{tiny}
+\begin{longtable}{|p{2.2cm}|p{2.2cm}|p{2.2cm}|p{2.2cm}|p{2.cm}|p{2.2cm}|}
+\hline
+\rowcolor{gray!20} & \textbf{Cenário 1 (Normal)} & \textbf{Cenário 2 (Temp alta)} & \textbf{Cenário 3 (CO₂ alto)} & \textbf{Cenário 4 (Umidade baixa)} & \textbf{Cenário 5 (VOCs alto)} \\ \hline
+\endfirsthead
+
+\multicolumn{6}{c}%
+{{\bfseries \tablename\ \thetable{} -- continuação da página anterior}} \\
+\hline
+\rowcolor{gray!20} & \textbf{Cenário 1} & \textbf{Cenário 2} & \textbf{Cenário 3} & \textbf{Cenário 4} & \textbf{Cenário 5} \\ \hline
+\endhead
+
+\hline \multicolumn{6}{|r|}{{Continua na próxima página}} \\ \hline
+\endfoot
+
+\hline
+\endlastfoot
+
+\textbf{Temperatura (°C)} & 23.5 & 27 & 22 & 20 & 24 \\ \hline
+\textbf{Umidade (\%)} & 55 & 50 & 60 & 25 & 65 \\ \hline
+\textbf{CO₂ (ppm)} & 650 & 700 & 1200 & 500 & 600 \\ \hline
+\textbf{VOCs (ppb)} & 120 & 100 & 150 & 80 & 500 \\ \hline
+\textbf{Resultado Esperado} & Todos valores exibidos, sem alertas & Temp exibida 27°C, sem alertas & Alerta para CO₂ (>1000ppm) & Alerta para umidade (<30\%) & Dados exibidos com VOCs=500ppb \\ \hline
+\textbf{Resultado Obtido} & & & & & \\ \hline
+\textbf{Sucesso/Falha} & & & & & \\ \hline
+\textbf{Nº Ambiente} & & & & & \\ \hline
+\textbf{Nº Log} & & & & & \\ \hline
+\end{longtable}
+\end{tiny}
+
+\newpage
+\subsection{Caso de Teste E2E-02: Contagem de Pessoas e Mudança de Estado}
+
+\subsubsection{Descrição}
+
+Validar a contabilização de entrada/saída de pessoas e a mudança de estado da instalação quando o limite é atingido.
+
+\textbf{Cobertura de Requisitos:}\\
+BIoT: RF02, RNF2, RNF11\\
+Manager: RF13, RF15, RF16, RNF04\\
+Dashboard: RF03, RF05
+
+\subsubsection{Pré-condições}
+
+\begin{itemize}
+    \item Sistema operacional (Broker, Manager, Dashboard)
+    \item Instalação INST-001 configurada com limite de ocupação = 15 pessoas
+    \item Estado inicial da instalação = ``Liberado''
+    \item Número de pessoas inicial = 0
+\end{itemize}
+
+\subsubsection{Cenário (Script)}
+
+Devido ao espaço, consultar o documento completo ``Casos de Teste SAFE.md'' para o script detalhado.
+
+\subsubsection{Conjunto de valores}
+
+\begin{tiny}
+\begin{longtable}{|p{2cm}|p{2.2cm}|p{2.2cm}|p{2.2cm}|p{2.2cm}|p{2.2cm}|}
+\hline
+\rowcolor{gray!20} & \textbf{Cenário 1 (Abaixo)} & \textbf{Cenário 2 (No limite)} & \textbf{Cenário 3 (Acima)} & \textbf{Cenário 4 (Muito acima)} & \textbf{Cenário 5 (Volta)} \\ \hline
+\textbf{Nº Entradas} & 10 & 15 & 16 & 25 & 8 (saídas) \\ \hline
+\textbf{Limite Máx} & 15 & 15 & 15 & 15 & 15 \\ \hline
+\textbf{Pessoas Totais} & 10 & 15 & 16 & 25 & 8 \\ \hline
+\textbf{Resultado Esp.} & Liberado, Pessoas: 10 & Liberado, Pessoas: 15 & Bloqueado, Pessoas: 16, Alerta, Notificação & Bloqueado, Pessoas: 25 & Liberado, Pessoas: 8 \\ \hline
+\textbf{Resultado Obt.} & & & & & \\ \hline
+\textbf{Sucesso/Falha} & & & & & \\ \hline
+\end{longtable}
+\end{tiny}
+
+\newpage
+\section{Casos de Teste de Requisitos Não Funcionais}
+
+\textbf{Objetivo:} Validar os atributos de qualidade do sistema, incluindo desempenho, segurança, confiabilidade, usabilidade e manutenibilidade.
+
+\textbf{IMPORTANTE:} Estes testes devem ser executados \textbf{APÓS} a conclusão e aprovação de todos os testes funcionais (Seção 4).
+
+\subsection{Testes de Integração e Comunicação}
+
+\subsubsection{Caso de Teste INT-01: Validação de Formato JSON (SAFE\_IAQ)}
+
+\paragraph{Descrição}
+
+Validar que o Manager aceita apenas mensagens MQTT no formato JSON correto para SAFE\_IAQ.
+
+\textbf{Cobertura de Requisitos:}\\
+BIoT: RNF2\\
+Manager: RNF19, RNF06
+
+\paragraph{Pré-condições}
+
+\begin{itemize}
+    \item Broker MQTT ativo
+    \item Manager conectado e escutando tópico SAFE\_IAQ
+\end{itemize}
+
+\paragraph{Conjunto de valores}
+
+\begin{tiny}
+\begin{longtable}{|p{2.2cm}|p{2.2cm}|p{2.2cm}|p{2.2cm}|p{2.2cm}|p{2cm}|}
+\hline
+\rowcolor{gray!20} & \textbf{Cenário 1 (Válido)} & \textbf{Cenário 2 (Campo faltando)} & \textbf{Cenário 3 (Tipo errado)} & \textbf{Cenário 4 (Null)} & \textbf{Cenário 5 (Inválido)} \\ \hline
+\textbf{Payload MQTT} & JSON completo válido & JSON sem campo co2 & temperatura: ``vinte'' & temperatura: null & JSON malformado \\ \hline
+\textbf{Resultado Esp.} & Dados aceitos e armazenados & Alerta ``FORMATO ERRADO'' & Alerta ``FORMATO ERRADO'' & Alerta ``FORMATO ERRADO'' & Alerta ``FORMATO ERRADO'' \\ \hline
+\textbf{Resultado Obt.} & & & & & \\ \hline
+\textbf{Sucesso/Falha} & & & & & \\ \hline
+\end{longtable}
+\end{tiny}
+
+\newpage
+\subsection{Testes de Limites (Boundary Testing)}
+
+\subsubsection{Caso de Teste LIM-03: Valores Extremos de CO₂}
+
+\paragraph{Descrição}
+
+Validar comportamento do sistema com valores extremos de CO₂.
+
+\textbf{Cobertura de Requisitos:}\\
+BIoT: RF04, RNF5\\
+Manager: RF13
+
+\paragraph{Pré-condições}
+
+\begin{itemize}
+    \item Sistema operacional
+    \item Limite de CO₂ configurado = 1000ppm
+\end{itemize}
+
+\paragraph{Conjunto de valores}
+
+\begin{footnotesize}
+\begin{tabularx}{\textwidth}{|l|X|X|X|X|X|}
+\hline
+\rowcolor{gray!20} & \textbf{Cen. 1 (0ppm)} & \textbf{Cen. 2 (500ppm)} & \textbf{Cen. 3 (999ppm)} & \textbf{Cen. 4 (1000ppm)} & \textbf{Cen. 5 (5000ppm)} \\ \hline
+\textbf{Valor CO₂} & 0 & 500 & 999 & 1000 & 5000 \\ \hline
+\textbf{Resultado Esp.} & Aceito, sem alerta & Aceito, sem alerta & Aceito, sem alerta & Aceito, alerta (limite) & Aceito, alerta \\ \hline
+\textbf{Dashboard} & 0ppm & 500ppm & 999ppm & 1000ppm + alerta & 5000ppm + alerta \\ \hline
+\textbf{Resultado Obt.} & & & & & \\ \hline
+\textbf{Sucesso/Falha} & & & & & \\ \hline
+\end{tabularx}
+\end{footnotesize}
+
+\subsubsection{Caso de Teste LIM-04: Valores Extremos de Temperatura}
+
+\paragraph{Descrição}
+
+Validar comportamento do sistema com valores extremos de temperatura.
+
+\textbf{Cobertura de Requisitos:} BIoT: RF03, RNF5 | Manager: RF13
+
+\paragraph{Pré-condições}
+
+\begin{itemize}
+    \item Sistema operacional
+    \item Limites de temperatura configurados = 18°C (mín) / 26°C (máx)
+\end{itemize}
+
+\paragraph{Conjunto de valores}
+
+\begin{footnotesize}
+\begin{tabularx}{\textwidth}{|l|X|X|X|X|X|}
+\hline
+\rowcolor{gray!20} & \textbf{Cen. 1 (10°C)} & \textbf{Cen. 2 (18°C)} & \textbf{Cen. 3 (22°C)} & \textbf{Cen. 4 (26°C)} & \textbf{Cen. 5 (35°C)} \\ \hline
+\textbf{Temperatura} & 10 & 18 & 22 & 26 & 35 \\ \hline
+\textbf{Resultado Esp.} & Aceito, alerta (<18°C) & Aceito, sem alerta & Aceito, sem alerta & Aceito, sem alerta & Aceito, alerta (>26°C) \\ \hline
+\textbf{Dashboard} & 10°C + alerta & 18°C & 22°C & 26°C & 35°C + alerta \\ \hline
+\textbf{LED BIoT} & Aceso & Apagado & Apagado & Apagado & Aceso \\ \hline
+\textbf{Resultado Obt.} & & & & & \\ \hline
+\textbf{Sucesso/Falha} & & & & & \\ \hline
+\end{tabularx}
+\end{footnotesize}
+
+\newpage
+\subsection{Testes de Segurança e Controle de Acesso}
+
+\subsubsection{Caso de Teste SEG-01: Login com Credenciais}
+
+\paragraph{Descrição}
+
+Validar autenticação no Manager com credenciais válidas e inválidas.
+
+\textbf{Cobertura de Requisitos:} Manager: RF17
+
+\paragraph{Pré-condições}
+
+\begin{itemize}
+    \item Manager acessível via browser
+    \item Usuários cadastrados no sistema
+\end{itemize}
+
+\paragraph{Conjunto de valores}
+
+\begin{footnotesize}
+\begin{tabularx}{\textwidth}{|l|X|X|X|X|}
+\hline
+\rowcolor{gray!20} & \textbf{Cenário 1 (Válido)} & \textbf{Cenário 2 (Senha errada)} & \textbf{Cenário 3 (Email não existe)} & \textbf{Cenário 4 (Vazio)} \\ \hline
+\textbf{Email} & admin@safe.br & admin@safe.br & inexistente@safe.br & (vazio) \\ \hline
+\textbf{Senha} & Admin@2025! & SenhaErrada123 & Qualquer@123 & (vazio) \\ \hline
+\textbf{Resultado Esp.} & Login OK & Erro: ``Inválidas'' & Erro: ``Inválidas'' & Erro: ``Preencha campos'' \\ \hline
+\textbf{Resultado Obt.} & & & & \\ \hline
+\textbf{Sucesso/Falha} & & & & \\ \hline
+\end{tabularx}
+\end{footnotesize}
+
+\newpage
+\subsection{Testes de Usabilidade (Interface Responsiva e Compatibilidade)}
+
+\subsubsection{Caso de Teste RESP-04: Compatibilidade de Navegadores}
+
+\paragraph{Descrição}
+
+Validar compatibilidade com navegadores específicos.
+
+\textbf{Cobertura de Requisitos:}\\
+Manager: RNF13\\
+Dashboard: RNF12
+
+\paragraph{Pré-condições}
+
+\begin{itemize}
+    \item Navegadores instalados: Chrome 118+, Firefox 115+, Edge 118+, Safari 16+
+\end{itemize}
+
+\paragraph{Conjunto de valores}
+
+\begin{footnotesize}
+\begin{tabularx}{\textwidth}{|l|X|X|X|X|}
+\hline
+\rowcolor{gray!20} & \textbf{Chrome 118} & \textbf{Firefox 115} & \textbf{Edge 118} & \textbf{Safari 16} \\ \hline
+\textbf{Dashboard carrega} & Sim & Sim & Sim & Sim \\ \hline
+\textbf{Gráficos exibidos} & Sim & Sim & Sim & Sim \\ \hline
+\textbf{Alertas funcionam} & Sim & Sim & Sim & Sim \\ \hline
+\textbf{Manager login} & Sim & Sim & Sim & Sim \\ \hline
+\textbf{Resultado Obtido} & & & & \\ \hline
+\textbf{Sucesso/Falha} & & & & \\ \hline
+\end{tabularx}
+\end{footnotesize}
+
+\vspace{1cm}
+
+\section*{Nota}
+
+Este documento apresenta uma seleção representativa dos casos de teste do Sistema SAFE. Para casos de teste adicionais e scripts completos detalhados (E2E-03 a E2E-07, INT-02, INT-03, LIM-01, LIM-02, LIM-05, LIM-06, SEG-02, SEG-04, TOL-01, TOL-06, PERF-01, PERF-02, PERF-03, RESP-01), consultar o documento completo ``Casos de Teste SAFE.md''.
+
+Os casos apresentados cobrem exemplos representativos de todas as categorias de teste:
+\begin{itemize}
+    \item Testes Funcionais E2E (E2E-01, E2E-02)
+    \item Testes de Integração (INT-01)
+    \item Testes de Limites (LIM-03, LIM-04)
+    \item Testes de Segurança (SEG-01)
+    \item Testes de Usabilidade (RESP-04)
+\end{itemize}
+
+\end{document}
