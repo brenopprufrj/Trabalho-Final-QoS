@@ -12,6 +12,10 @@
 \usepackage{colortbl}
 \usepackage{longtable}
 \usepackage{array}
+\usepackage{textcomp} % Suporte para símbolos de texto
+\usepackage{amssymb}  % Suporte para símbolos matemáticos
+\DeclareUnicodeCharacter{2264}{\ensuremath{\le}}         % Corrige o erro 2264 (≤)
+\DeclareUnicodeCharacter{2082}{\textsubscript{2}}        % Corrige o erro 2082 (₂ de CO₂)
 
 % Configuração das Margens
 \geometry{left=2cm, right=2cm, top=2.5cm, bottom=2.5cm}
