@@ -10,6 +10,12 @@
 \usepackage{hyperref}
 \usepackage{colortbl}
 \usepackage{enumitem}
+\usepackage{textcomp} % Suporte para símbolos de texto
+\usepackage{amssymb}  % Suporte para símbolos matemáticos
+\DeclareUnicodeCharacter{2264}{\ensuremath{\le}}         % Corrige o erro 2264 (≤)
+\DeclareUnicodeCharacter{2082}{\textsubscript{2}}        % Corrige o erro 2082 (₂ de CO₂)
+\DeclareUnicodeCharacter{2265}{\ensuremath{\ge}}         % Código 2265: Maior ou igual (≥)
+\DeclareUnicodeCharacter{2248}{\ensuremath{\approx}}     % Código 2248: Aproximadamente (≈)
 
 % Configuração das Margens
 \geometry{left=2.5cm, right=2.5cm, top=3cm, bottom=3cm}
